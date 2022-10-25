@@ -1,7 +1,4 @@
-from asyncio.windows_events import NULL
 import json
-from operator import truediv
-from turtle import back
 
 
 
@@ -9,12 +6,12 @@ def read_modules():
     return json.load(open('db_module.json'))
 
 
-def search_module(name):
+def search_module(id):
     with open('db_module.json', 'r+') as f:
         data = json.load(f)
 
         for module in data['modules']:
-            if module['name'] == name:
+            if module['id'] == id:
                 return module
         return None
 
@@ -66,3 +63,4 @@ def remove_backdoor(name):
         f.seek(0)
         f.truncate()
         json.dump(data, f, indent=4)
+
