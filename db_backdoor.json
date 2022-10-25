@@ -1,0 +1,64 @@
+{
+    "backdoors": [
+        {
+            "name": "back1",
+            "type": "webshell-cambiado",
+            "target_ip": "10.0.0.1",
+            "target_url": "https://urltarget.com",
+            "attacker_ip": "127.0.0.1",
+            "attacker_url": "",
+            "payload_url": "https://urlpayload.com",
+            "entries": [
+                {
+                    "service": "ssh",
+                    "username": "admin",
+                    "password": "",
+                    "key": "czxvoijpvoiajpoijpvosifjvosjf poaidsosdac;ok",
+                    "file": "",
+                    "status": "up"
+                },
+                {
+                    "service": "webserver",
+                    "username": "admin",
+                    "password": "admin",
+                    "key": "",
+                    "file": "/wp-admin",
+                    "status": "down"
+                }
+            ],
+            "modules": [],
+            "shell": "phpshell",
+            "status": "active",
+            "error": []
+        },
+        {
+            "name": "backprueba",
+            "type": "ncshell",
+            "target_ip": "31.2.6.22",
+            "target_url": "",
+            "attacker_ip": "127.0.0.1",
+            "attacker_url": "",
+            "payload_url": "",
+            "entries": [
+                {
+                    "service": "webserver",
+                    "username": "admin2",
+                    "password": "admin2222",
+                    "key": "",
+                    "file": "/admin/test",
+                    "status": "up"
+                }
+            ],
+            "modules": [
+                {
+                    "id": "kh1"
+                }
+            ],
+            "shell": "ncshell",
+            "status": "inactive",
+            "error": [
+                "No tira"
+            ]
+        }
+    ]
+}

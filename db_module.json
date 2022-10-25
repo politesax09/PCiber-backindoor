@@ -1,0 +1,18 @@
+{
+    "modules": [
+        {
+            "id": "kh1",
+            "route": "back/reverse",
+            "type": "shell",
+            "tool": "kh0",
+            "descriptiion": "Reverse shell"
+        },
+        {
+            "id": "kh2",
+            "route": "getRules",
+            "type": "aux",
+            "tool": "kh0",
+            "descriptiion": "Get iptables rules"
+        }
+    ]
+}

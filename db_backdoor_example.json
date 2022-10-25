@@ -1,0 +1,75 @@
+{
+    "backdoors": [
+        {
+            "name": "data",
+            "type": "data",
+            "target_ip": "data",
+            "target_url": "data",
+            "attacker_ip": "data",
+            "attacker_url": "data",
+            "payload_url": "data",
+            "entries": [
+                {
+                    "service": "data",
+                    "username": "data",
+                    "password": "data",
+                    "key": "data",
+                    "file": "data",
+                    "status": "data"
+                },
+                {
+                    "service": "data",
+                    "username": "data",
+                    "password": "data",
+                    "key": "data",
+                    "file": "data",
+                    "status": "data"
+                }
+            ],
+            "modules": [
+                {
+                    "id": "data" // Enlaza con db_module.json
+                }
+            ],
+            "shell": "data",
+            "status": "data",
+            "error": "data"
+        },
+        {
+            "name": "data",
+            "type": "data",
+            "ip_target": "data",
+            "url_target": "data",
+            "ip_attacker": "data",
+            "url_attacker": "data",
+            "url_payload": "data",
+            "entries": [
+                {
+                    "service": "data",
+                    "username": "data",
+                    "password": "data",
+                    "key": "data",
+                    "file": "data",
+                    "status": "data"
+                },
+                {
+                    "service": "data",
+                    "username": "data",
+                    "password": "data",
+                    "key": "data",
+                    "file": "data",
+                    "status": "data"
+                }
+            ],
+            "modules": [
+                {
+                    "id": "data",
+                    "tool": "data"
+                }
+            ],
+            "shell": "data",
+            "status": "data",
+            "error": "data"
+        }
+    ]
+}
