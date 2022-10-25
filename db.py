@@ -1,5 +1,7 @@
+from asyncio.windows_events import NULL
 import json
 from operator import truediv
+from turtle import back
 
 
 
@@ -7,8 +9,28 @@ def read_modules():
     return json.load(open('db_module.json'))
 
 
+def search_module(name):
+    with open('db_module.json', 'r+') as f:
+        data = json.load(f)
+
+        for module in data['modules']:
+            if module['name'] == name:
+                return module
+        return None
+
+
 def read_backdoors():
     return json.load(open('db_backdoor.json'))
+
+
+def search_backdoor(name):
+    with open('db_backdoor.json', 'r+') as f:
+        data = json.load(f)
+
+        for backdoor in data['backdoors']:
+            if backdoor['name'] == name:
+                return backdoor
+        return None
 
 
 def add_backdoor(new_data):
