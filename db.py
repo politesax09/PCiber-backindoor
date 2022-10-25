@@ -9,7 +9,6 @@ def read_modules():
 def search_module(id):
     with open('db_module.json', 'r+') as f:
         data = json.load(f)
-
         for module in data['modules']:
             if module['id'] == id:
                 return module
@@ -21,9 +20,7 @@ def read_backdoors():
 
 
 def search_backdoor(name):
-    with open('db_backdoor.json', 'r+') as f:
-        data = json.load(f)
-
+    with json.load(open('db_backdoor.json', 'r+')) as data:
         for backdoor in data['backdoors']:
             if backdoor['name'] == name:
                 return backdoor
@@ -63,4 +60,5 @@ def remove_backdoor(name):
         f.seek(0)
         f.truncate()
         json.dump(data, f, indent=4)
+
 
