@@ -20,11 +20,12 @@ def read_backdoors():
 
 
 def search_backdoor(name):
-    with json.load(open('db_backdoor.json', 'r+')) as data:
-        for backdoor in data['backdoors']:
-            if backdoor['name'] == name:
-                return backdoor
-        return None
+    f = open('db_backdoor.json', 'r')
+    data = json.load(f)
+    for backdoor in data['backdoors']:
+        if backdoor['name'] == name:
+            return backdoor
+    return None
 
 
 def add_backdoor(new_data):
@@ -53,12 +54,9 @@ def remove_backdoor(name):
         # Busca por nombre, no puede haber dos con mismo nombre
         for backdoor in data['backdoors']:
             if backdoor['name'] == name:
-                print('ENCONTRADA ', data['backdoors'].index(backdoor))
-                data['backdoors'].pop(data['backdoors'].index(backdoor))
                 break
         
         f.seek(0)
         f.truncate()
         json.dump(data, f, indent=4)
-
 
