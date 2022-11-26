@@ -1,8 +1,8 @@
 {
     "modules": [
         {
-            "id": "data",
-            "route": "data",
+            "id": "data",   //m1, m2... o k1, k2... segun sea de Metasploit o Kh0p3sh
+            "route": "data",    //ruta dentro de la herramienta que corresponda
             "type": "data",
             "tool": "data", //msf o kh0p3sh
             "descriptiion": "data"

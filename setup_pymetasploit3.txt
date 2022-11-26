@@ -1,0 +1,15 @@
+
+INSTALAR:
+pip install pymetasploit3
+
+
+ARRANCAR SERVIDOR RPC:
+$ msfconsole
+[en msf] load msgrpc Pass=backindoor
+
+o
+
+$ msfrpcd -P backindoor         Con SSL y en background
+$ msfrpcd -P backindoor -f      Con SSL y en foreground
+$ msfrpcd -P backindoor -Sf     Sin SSL y en foreground
+

@@ -33,7 +33,7 @@ class Backdoor:
         for module in modules:
             self.modules.append(module['id'])
 
-
+    
     def get_backdoor(self):
         backdoor = search_backdoor(self.name)
         if backdoor['type']: self.type = backdoor['type']
@@ -58,7 +58,6 @@ class Backdoor:
         else: self.status = None
         if backdoor['error']: self.error = backdoor['error']
         else: self.error = []
-        print(self.name, self.target_ip)
 
 
     def save_backdoor(self):
@@ -87,16 +86,26 @@ class Backdoor:
         else: backdoor['status'] = None
         if self.error: backdoor['error'] = self.error
         else: backdoor['error'] = None
-        print(backdoor)
         add_backdoor(backdoor)
 
 
     def rm_backdoor(name):
         remove_backdoor(name)
 
+    
+    def print_backdoorclass(self):
+        print(self.name)
+        print(self.attacker_ip)
+        print(self.type)
+        print(self.entries)
+        print(self.modules)
 
-b1 = Backdoor('back1')
-# b1.type = 'tipo'
-# b1.target_ip = 12345
-# b1.save_backdoor()
-b1.get_backdoor()
+
+def get_saved_backdoors():
+    backdoors_class = []
+    backdoors_json = read_backdoors()
+    i = 0
+    for backdoor in backdoors_json['backdoors']:
+        backdoors_class.append(Backdoor(backdoor['name']))
+        backdoors_class[i].get_backdoor()
+    return backdoors_class
