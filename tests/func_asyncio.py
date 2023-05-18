@@ -1,17 +1,24 @@
 import asyncio
 
+msg_list = asyncio.Queue()
+
 async def tarea1():
     print('Tarea 1 iniciada')
+    await msg_list.put({'msg':'Mensage de prueba'})
     await asyncio.sleep(2)  # Simula una operación que toma 2 segundos
     print('Tarea 1 completada')
 
 async def tarea2():
     print('Tarea 2 iniciada')
-    await asyncio.sleep(3)  # Simula una operación que toma 3 segundos
+    # await tarea1()
+    for :
+        print(await msg_list.get())
+    await asyncio.sleep(5)  # Simula una operación que toma 3 segundos
     print('Tarea 2 completada')
 
 async def tarea3():
     print('Tarea 3 iniciada')
+    await msg_list.put({'msg':'Mensage de prueba'})
     await asyncio.sleep(1)  # Simula una operación que toma 1 segundo
     print('Tarea 3 completada')
 
