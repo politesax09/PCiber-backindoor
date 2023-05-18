@@ -59,6 +59,20 @@
             "error": [
                 "No tira"
             ]
+        },
+        {
+            "name": "back4",
+            "type": "msf_ssh_key",
+            "target_ip": null,
+            "target_url": null,
+            "attacker_ip": "127.0.0.1",
+            "attacker_url": null,
+            "payload_url": null,
+            "entries": [],
+            "modules": [],
+            "shell": "ncshell",
+            "status": "innactive",
+            "error": null
         }
     ]
 }

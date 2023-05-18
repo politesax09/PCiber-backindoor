@@ -4,8 +4,12 @@ pip install pymetasploit3
 
 
 ARRANCAR SERVIDOR RPC:
-$ msfconsole
-[en msf] load msgrpc Pass=backindoor
+    - DESDE MSFCONSOLE
+        $ msfconsole
+        [en msf] load msgrpc Pass=backindoor
+
+    - DESDE TERMINAL VIA MSFCONSOLE
+        $ msfconsole
 
 o
 

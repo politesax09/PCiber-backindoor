@@ -10,6 +10,7 @@
             "payload_url": "data",
             "entries": [
                 {
+                    "session": "data",
                     "service": "data",
                     "username": "data",
                     "password": "data",
@@ -18,6 +19,7 @@
                     "status": "data"
                 },
                 {
+                    "session": "data",
                     "service": "data",
                     "username": "data",
                     "password": "data",

