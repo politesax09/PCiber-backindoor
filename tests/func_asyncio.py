@@ -11,8 +11,11 @@ async def tarea1():
 async def tarea2():
     print('Tarea 2 iniciada')
     # await tarea1()
-    for :
-        print(await msg_list.get())
+    while True:
+        if not msg_list.empty():
+            print(await msg_list.get())
+        else:
+            break
     await asyncio.sleep(5)  # Simula una operación que toma 3 segundos
     print('Tarea 2 completada')
 

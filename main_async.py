@@ -1,4 +1,7 @@
 import asyncio
+from monitor import Monitor
+
+msg_q = asyncio.Queue()
 
 async def menu_async():
     pass

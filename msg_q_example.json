@@ -1,0 +1,9 @@
+{
+    "id": "1",
+    "type": "session_down",
+    "msg": [
+        "1", // ID sesion
+        "status_down",  // Estado comprobado
+        "<timestamp>"   // Momento del fallo
+    ]
+}

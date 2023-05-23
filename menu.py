@@ -10,7 +10,7 @@
 
 #   -- MONITORIZAR PERSISTENCIA ACTIVA
 #       --- ARQUITECTURA ASYNCIO
-#           ---- HILO GENERAL (NO SE SI ES NECESARIO)
+#           ---- HILO GENERAL (ES NECESARIO PORQ MENU Y MONITOR TIENEN QUE SER TAREAS CONCURRENTES)
 #           ---- HILO DE MENU Y EJECUCION DE OPERACIONES
 #           ---- HILO DE MONITORIZACION
 
@@ -141,6 +141,10 @@ Opnciones: \n \
 
             else: print('-- ERROR: Debes seleccionar una backdoor disponible')
         
+        # TODO: MOSTRAR MONITOR AL INICIAR EL PROGRAMA
+        elif (ops[0] == 'monitor'):
+        # Monitorizar persistencias en funcionamiento
+            pass
 
         elif (ops[0] == 'modules'):
             print('Desplegar modulos de MSF\n')
