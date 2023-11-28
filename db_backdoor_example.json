@@ -2,7 +2,7 @@
     "backdoors": [
         {
             "name": "data",
-            "type": "data",
+            "type": "msf_ssh_key | msf_bashrc",
             "target_ip": "data",
             "target_url": "data",
             "attacker_ip": "data",
@@ -10,13 +10,13 @@
             "payload_url": "data",
             "entries": [
                 {
-                    "session": "data",
+                    "session": "msf-1 | msf-2 |... | kh0-1 | ...",
                     "service": "data",
                     "username": "data",
                     "password": "data",
                     "key": "data",
                     "file": "data",
-                    "status": "data"
+                    "status": "up | down"
                 },
                 {
                     "session": "data",
@@ -33,8 +33,8 @@
                     "id": "data" // Enlaza con db_module.json
                 }
             ],
-            "shell": "data",
-            "status": "data",
+            "shell": "nc | php | ssh | meter",
+            "status": "active | innactive",
             "error": "data"
         },
         {

@@ -6,6 +6,7 @@
 #
 
 
+import subprocess
 from db import *
 
 class Backdoor:
@@ -89,8 +90,8 @@ class Backdoor:
         add_backdoor(backdoor)
 
 
-    def rm_backdoor(name):
-        remove_backdoor(name)
+    def rm_backdoor(self):
+        remove_backdoor(self.name)
 
     
     def print_backdoorclass(self):
@@ -100,12 +101,20 @@ class Backdoor:
         print(self.entries)
         print(self.modules)
 
+    def print_backdoorclass_simple(self):
+        print('Nombre: ' + self.name)
+        print('Tipo:' + self.type)
+        print('Objetivo:' + self.target_ip)
+        print('Estado:' + self.status)
+
+
 
 def get_saved_backdoors():
-    backdoors_class = []
+    backdoor_class_list = []
     backdoors_json = read_backdoors()
     i = 0
     for backdoor in backdoors_json['backdoors']:
-        backdoors_class.append(Backdoor(backdoor['name']))
-        backdoors_class[i].get_backdoor()
-    return backdoors_class
+        backdoor_class_list.append(Backdoor(backdoor['name']))
+        backdoor_class_list[i].get_backdoor()
+    return backdoor_class_list
+

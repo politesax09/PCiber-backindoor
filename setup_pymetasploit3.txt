@@ -17,3 +17,7 @@ $ msfrpcd -P backindoor         Con SSL y en background
 $ msfrpcd -P backindoor -f      Con SSL y en foreground
 $ msfrpcd -P backindoor -Sf     Sin SSL y en foreground
 
+
+
+EXPLOIT PARA SESION DE PRUEBA:
+exploit/multi/samba/usermap_script

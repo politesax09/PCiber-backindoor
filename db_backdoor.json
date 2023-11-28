@@ -1,67 +1,49 @@
 {
     "backdoors": [
         {
-            "name": "back1",
-            "type": "webshell-cambiado",
-            "target_ip": "10.0.0.1",
-            "target_url": "https://urltarget.com",
+            "name": "test_msf_ssh",
+            "type": "msf_ssh_key",
+            "target_ip": null,
+            "target_url": null,
             "attacker_ip": "127.0.0.1",
-            "attacker_url": "",
-            "payload_url": "https://urlpayload.com",
-            "entries": [
-                {
-                    "service": "ssh",
-                    "username": "admin",
-                    "password": "",
-                    "key": "czxvoijpvoiajpoijpvosifjvosjf poaidsosdac;ok",
-                    "file": "",
-                    "status": "up"
-                },
-                {
-                    "service": "webserver",
-                    "username": "admin",
-                    "password": "admin",
-                    "key": "",
-                    "file": "/wp-admin",
-                    "status": "down"
-                }
-            ],
+            "attacker_url": null,
+            "payload_url": null,
+            "entries": [],
             "modules": [],
-            "shell": "phpshell",
-            "status": "active",
-            "error": []
-        },
-        {
-            "name": "backprueba",
-            "type": "ncshell",
-            "target_ip": "31.2.6.22",
-            "target_url": "",
-            "attacker_ip": "127.0.0.1",
-            "attacker_url": "",
-            "payload_url": "",
-            "entries": [
-                {
-                    "service": "webserver",
-                    "username": "admin2",
-                    "password": "admin2222",
-                    "key": "",
-                    "file": "/admin/test",
-                    "status": "up"
-                }
-            ],
-            "modules": [
-                {
-                    "id": "kh1"
-                }
-            ],
             "shell": "ncshell",
-            "status": "inactive",
-            "error": [
-                "No tira"
-            ]
+            "status": "innactive",
+            "error": null
         },
         {
-            "name": "back4",
+            "name": "test_bashrc",
+            "type": "msf_bashrc",
+            "target_ip": null,
+            "target_url": null,
+            "attacker_ip": "127.0.0.1",
+            "attacker_url": null,
+            "payload_url": null,
+            "entries": [],
+            "modules": [],
+            "shell": "ncshell",
+            "status": "innactive",
+            "error": null
+        },
+        {
+            "name": "b2",
+            "type": "msf_ssh_key",
+            "target_ip": null,
+            "target_url": null,
+            "attacker_ip": "127.0.0.1",
+            "attacker_url": null,
+            "payload_url": null,
+            "entries": [],
+            "modules": [],
+            "shell": "ncshell",
+            "status": "innactive",
+            "error": null
+        },
+        {
+            "name": "bereer",
             "type": "msf_ssh_key",
             "target_ip": null,
             "target_url": null,

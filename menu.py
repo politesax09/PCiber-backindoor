@@ -1,248 +1,338 @@
-# - OPCIONES INICIALES:
-#   -- DESPLEGAR BACKDOOR:
-#       --- SELECCIONAR MODULO
-#       --- CONFIGURAR MODULO
-#       --- LISTAR MODULOS DISPONIBLES
-
-#   -- DESPLEGAR 2 TECNICAS DE PERSISTENCIA PARAMETRIZADAS
-
-#   -- LISTAR PERSISTENCIAS ACTIVAS
-
-#   -- MONITORIZAR PERSISTENCIA ACTIVA
-#       --- ARQUITECTURA ASYNCIO
-#           ---- HILO GENERAL (ES NECESARIO PORQ MENU Y MONITOR TIENEN QUE SER TAREAS CONCURRENTES)
-#           ---- HILO DE MENU Y EJECUCION DE OPERACIONES
-#           ---- HILO DE MONITORIZACION
-
-
-
 # TODO: Preguntar si al principio si hay algun servidor MSFRPC activo
 
+import datetime
 from backdoor import Backdoor, get_saved_backdoors
 from msf import Msf
 
+class Menu:
+    def __init__(self, msg_q, msg_count, backdoor, msf) -> None:
+        self.msg_q = msg_q
+        self.msg_count = msg_count
+        self.backdoor = backdoor
+        self.backdoor_list = get_saved_backdoors()
+        self.msf = msf
+        # Esperar inicio de Monitor
+        # init_msg = self.wait_msg()
+        # if init_msg['type'] == 'menu' and init_msg['backdoor'] == 'monitor':
+        #     if init_msg['msg'][0] == 'start':
+        #         print('-- COOL: MONITOR inciado correctamente')
+                # self.menu()
+            # else: print('-- HOT: Fallo al iniciar MONITOR. Saliendo de BackInDoor')
+        # else: print('-- HOT: Mensaje no esperado. Saliendo de BackInDoor')
+        self.menu()
 
-def menu():
 
-    try:
-        # OJO CON LA CONEXION EN Msf(), PUEDE FALLAR POR LOS PARAMETROS
-        msf = Msf()
-        print('Servicio RPC conectado')
-    except:
-        msf = None
-        print('-- ERROR: No hay servicio RCP activo')
+    def get_msg_q(self):
+        if not self.msg_q.empty():
+            self.msg_q.get()
 
-    backdoor = Backdoor(None)
 
-    while (True):
-        print('\n\nBienvenido a B4ckInD00r\n\
-Opnciones: \n \
-\t> deploy\t[[Despliega una nueva backdoor]]\n \
-\t> list\t[[Lista las backdoors activas]]\n\
-\t> select <backdoor_name>\t[[Selecciona una backdoor activa]]\n\
-\t> modules\t[[Usa un modulo MSF]]\n\
-\t> exit\t[[Salir]]\n')
+    def put_msg_q(self, bdoor_name, type, msg):
+            if bdoor_name and type and msg:
+                msg.append(datetime.datetime.now())
+                self.msg_count += 1
+                self.msg_q.put({
+                    "id": self.msg_count,
+                    "type": type,
+                    "backdoor": bdoor_name,
+                    "msg": msg
+                })
 
-        op = input('>>>   ').strip().lower()
-        ops = []
 
-        if (' ' in op):
-            delim = op.index(' ')
-            ops.append(op[:delim].strip())
-            ops.append(op[delim+1:].strip())
-        else:
-            ops.append(op)
+    def wait_msg(self):
+        msg = None
+        while not msg:
+            if not self.msg_q.empty():
+                msg = self.msg_q.get()
+        return msg
 
-        if (ops[0] == 'exit'):
-            break
 
-        elif (ops[0] == 'deploy'):
-            print('\nDesplegar nueva backdoor\n')
-            name = input('Ponle nombre >>>   ').strip().lower()
+    def menu(self):
+        while (True):
+            print('\n\nBienvenido a B4ckInD00r\n\
+        Opnciones: \n \
+        \t> deploy\t[[Despliega una nueva backdoor]]\n \
+        \t> monitor\t[[Estado de las backdoors]]\n\
+        \t> select <backdoor_name>\t[[Selecciona una backdoor activa]]\n\
+        \t> utils\t[[Ejecuta utilidades complementarias]]\n\
+        \t> modules\t[[Usa un modulo MSF]]\n\
+        \t> exit\t[[Salir]]\n')
+            op = input('>>>   ').strip().lower()
+            ops = []
+            if (' ' in op):
+                delim = op.index(' ')
+                ops.append(op[:delim].strip())
+                ops.append(op[delim+1:].strip())
+            else:
+                ops.append(op)
 
-            backdoor.name = name
-            backdoor.status = 'created'
 
-            while (True):
-                print('\nOpciones:\n\
-            > msf_ssh_key   [[Inyecta claves SSH en la victima]]\n\
-            > back  [[Atras]]\n')
+            if (ops[0] == 'exit'):
+                break
 
-                op = input('>>>   ').strip().lower()
+            ##################  DEPLOY  ##################
 
-                ops.clear()
-                if (' ' in op):
-                    delim = op.index(' ')
-                    ops.append(op[:delim].strip())
-                    ops.append(op[delim+1:].strip())
-                else:
-                    ops.append(op)
-                
-                
-                if (ops[0] == 'msf_ssh_key'):
-                    print('\nDesplegando backdoor...\n')
-                    backdoor.type = 'msf_ssh_key'
-                    backdoor.attacker_ip = '127.0.0.1'
-                    # TODO: COMPROBAR SHELL REAL EN NOMBRE DEL PAYLOAD DE MSF
-                    backdoor.shell = 'ncshell'
-                    session_id = msf.msf_ssh_key()
-                    if session_id:
-                        session = msf.get_session(session_id)
-                        backdoor.target_ip = session['target_host']
-                        backdoor.status = 'active'
-                        
-                        # TODO: LOCALIZAR KEYS Y APUNTAR RUTA EN LA BD
-                        
+            elif (ops[0] == 'deploy'):
+                print('\nDesplegar nueva backdoor\n')
+                name = input('Ponle nombre >>>   ').strip().lower()
 
-                        backdoor.entries.append(
-                            {
-                                'session': session_id,
-                                'service': 'ssh',
-                                'username': None,
-                                'password': None,
-                                'key': None,
-                                'file': None,
-                                'status': 'up'
-                            }
-                        )
+                self.backdoor.name = name
+                self.backdoor.status = 'created'
+
+                while (True):
+                    print('\nOpciones:\n\
+                > msf_ssh_key   [[Inyecta claves SSH en la victima]]\n\
+                > bashrc     [[Inyecta shell en .bashrc]]\n\
+                > back  [[Atras]]\n')
+
+                    op = input('[deploy]>>>   ').strip().lower()
+
+                    ops.clear()
+                    if (' ' in op):
+                        delim = op.index(' ')
+                        ops.append(op[:delim].strip())
+                        ops.append(op[delim+1:].strip())
                     else:
-                        backdoor.status = 'innactive'
+                        ops.append(op)
                     
-                    backdoor.save_backdoor()
-
-
-
-                elif (ops[0] == 'back'):
-                    break
-
-                else: print('-- ERROR: El comando no existe')
-
-
-        elif (ops[0] == 'list'):
-        # TODO: MEJORAR PRESENTACION DE LOS DATOS DE BACKDOORS
-            print('Backdoors activas:\n')
-            backdoors = get_saved_backdoors()
-            for bdoor in backdoors:
-                bdoor.print_backdoorclass()
-                print()
-
-
-        elif (ops[0] == 'select'):
-            if (len(ops) > 1):
-                backdoors = get_saved_backdoors()
-                for bdoor in backdoors:
-                    if (ops[1] == bdoor.name):
-                        backdoor = bdoor
-                        break
-                if backdoor.name != None:
-                    print('Seleccionada ' + backdoor.name)
-                else:
-                    print('La backdoor seleccionada no existe')
-
-            else: print('-- ERROR: Debes seleccionar una backdoor disponible')
-        
-        # TODO: MOSTRAR MONITOR AL INICIAR EL PROGRAMA
-        elif (ops[0] == 'monitor'):
-        # Monitorizar persistencias en funcionamiento
-            pass
-
-        elif (ops[0] == 'modules'):
-            print('Desplegar modulos de MSF\n')
-            name = input('Ponle nombre a la backdoor para guardar los datos >>>   ').strip().lower()
-
-            backdoor.name = name
-            backdoor.status = 'created'
-
-            while (True):
-
-                print('\nOpciones:\n\
-            > select <module_name || module_num>  [[Selecciona un modulo]]\n\
-            > config    [[Configura el modulo seleccionado]]\n\
-            > list  [[Lista los modulos disponibles]]\n\
-            > back  [[Atras]]\n')
-
-                op = input('>>>   ').strip().lower()
-
-                # TODO: Configurar variables sin entrar en 'config' como en MSF
-
-                ops.clear()
-                if (' ' in op):
-                    delim = op.index(' ')
-                    ops.append(op[:delim].strip())
-                    ops.append(op[delim+1:].strip())
-                else:
-                    ops.append(op)
-
-                if (ops[0] == 'select'):
-                    modules_list = msf.get_modules()
-
-                    if (len(ops) > 1):
-                        if (len(ops[1]) < 4):
-                            if (int(ops[1]) < len(modules_list)):
-                                backdoor.modules.append({'id': 'post/' + modules_list[int(ops[1])], 'tool': 'msf'})
-                                print('Seleccionado modulo ' + modules_list[int(ops[1])])
-                            else:
-                                print('-- ERROR: El numero del modulo seleccionado no es correcto')
+                    if (ops[0] == 'msf_ssh_key'):
+                        print('\nDesplegando backdoor...\n')
+                        self.backdoor.type = 'msf_ssh_key'
+                        self.backdoor.attacker_ip = '127.0.0.1'
+                        self.backdoor.shell = 'ncshell'
+                        session_id = self.msf.msf_ssh_key()
+                        if session_id:
+                            session = self.msf.get_session(session_id)
+                            self.backdoor.target_ip = session['target_host']
+                            self.backdoor.status = 'active'
                         else:
-                            if (ops[1] in modules_list):
-                                backdoor.modules.append({'id': 'post/' + ops[1], 'tool': 'msf'})
-                                print('Seleccionado modulo ' + ops[1])
-                            else:
-                                print('-- ERROR: El modulo seleccionado no es correcto')
+                            self.backdoor.status = 'innactive'
+                        self.backdoor.save_backdoor()
+
+                    elif (ops[0] == 'bashrc'):
+                        self.backdoor.type = 'bashrc'
+                        self.backdoor.attacker_ip = '127.0.0.1'
+                        self.backdoor.shell = 'ncshell'
+                        session_id = self.msf.msf_bashrc()
+                        if session_id:
+                            session = self.msf.get_session(session_id)
+                            self.backdoor.target_ip = session['target_host']
+                            self.backdoor.status = 'active'
+                        else:
+                            self.backdoor.status = 'innactive'
+                        self.backdoor.save_backdoor()
+
+                    elif (ops[0] == 'back'):
+                        break
+
+                    else: print('-- HOT: La opcion no existe')
+                    
+
+            ##################  MONITOR  ##################
+
+            elif (ops[0] == 'monitor'):
+                self.put_msg_q('monitor', 'menu',['run'])
+                for b in self.backdoor_list:
+                    mon_res = self.wait_msg()
+                    if mon_res != None:
+                        if mon_res['type'] == 'entrie' and mon_res['backdoor'] == b.name:
+                            if mon_res['msg'][0] == 'status_up':
+                                b.status = 'active'
+                            elif mon_res['msg'][0] == 'status_down':
+                                b.status = 'innactive'
+                            self.put_msg_q('monitor', 'menu', ['run'])
+                        
+                print('Backdoors activas:\n')
+                for bdoor in self.backdoor_list:
+                    bdoor.print_backdoorclass()
+                    print()
+                print('Sesiones activas:\n')
+                print(self.msf.get_sessions())
+
+                while True:
+                    print('\nOpciones:\n\
+                > list   [[Lista las backdoors guardadas]]\n\
+                > select <nombre backdoor>    [[Selecciona una backdoor]]\n\
+                > restart <nombre backdoor>     [[Ejecutar de nuevo]]\n\
+                > delete <nombre backdoor>      [[Eliminar backdoor]]\n\
+                > back  [[Atras]]\n')
+
+                    op = input('[monitor]>>>   ').strip().lower()
+                    ops.clear()
+                    if (' ' in op):
+                        delim = op.index(' ')
+                        ops.append(op[:delim].strip())
+                        ops.append(op[delim+1:].strip())
                     else:
-                        print('-- ERROR: Se debe indicar el modulo seleccionado')
+                        ops.append(op)
+
+                    if ops[0] == 'list':
+                        print('Backdoors activas:\n')
+                        self.backdoor_list = get_saved_backdoors()
+                        for bdoor in self.backdoor_list:
+                            bdoor.print_backdoorclass_simple()
+                            print('------------------')
+                        print('Sesiones activas:\n')
+                        print(self.msf.get_sessions())
                     
-                    # TODO: DECIDIR Se puede escribir backdoor en DB en este punto aunque no este rellena
+                    if (ops[0] == 'select'):
+                        if (len(ops) > 1):
+                            self.backdoor_list = get_saved_backdoors()
+                            for bdoor in self.backdoor_list:
+                                if (ops[1] == bdoor.name):
+                                    self.backdoor = bdoor
+                                    break
+                            if self.backdoor.name != None:
+                                print('COOL: Seleccionada ' + self.backdoor.name)
+                                self.backdoor.print_backdoorclass()
+                                print()
+                            else:
+                                print('-- HOT: La backdoor seleccionada no existe\n')
+
+                        else: print('-- HOT: Debes seleccionar una backdoor disponible\n')
+
+                    if ops[0] == 'restart':
+                        if len(ops) > 1:
+                            for bdoor in self.backdoor_list:
+                                if ops[1] == bdoor.name:
+                                    self.backdoor = bdoor
+                                    break
+                            if self.backdoor.name != None:
+                                print('COOL: Reiniciando ' + self.backdoor.name)
+                                # Enviar mensaje para que monitor la reinicie
+                                self.put_msg_q(self.backdoor.name, 'action', ['restart', datetime.datetime.now()])
+                            else:
+                                print('-- HOT: La backdoor seleccionada no existe\n')
+                        else: print('-- HOT: Debes seleccionar una backdoor disponible\n')
                     
+                    if ops[0] == 'delete':
+                        if len(ops) > 1:
+                            for bdoor in self.backdoor_list:
+                                if ops[1] == bdoor.name:
+                                    self.backdoor = bdoor
+                                    break
+                            if self.backdoor.name != None:
+                                self.backdoor.rm_backdoor()
+                                print(f'COOL: {self.backdoor.name} eliminada\n')
+                            else:
+                                print('-- HOT: La backdoor seleccionada no existe\n')
+                        else: print('-- HOT: Debes seleccionar una backdoor disponible\n')
 
-                elif (ops[0] == 'config'):
-                    print('Configuracion de ' + str(backdoor.name) + ':')
 
-                    if (len(backdoor.modules) > 0):
-                        module = msf.select_module(backdoor.modules[0]['id'])
-                        config_missing = msf.get_missing_required(module)
-                        for item in config_missing:
-                            if (item == 'SESSION'):
-                                print(item)
-                    else: print('ERROR: No hay modulos seleccionados')
+            ##################  UTILIS  ##################
 
+            elif ops[0] == 'utils':
+                while (True):
+                    print('Utilidades complementarias')
+                    print('\nOpciones:\n\
+                    > enum_users\n\
+                    > back  [[Atras]]\n')
+                    op = input('>>>   ').strip().lower()
 
-                    # op_target_ip = input('target_ip [' + str(backdoor.target_ip) + '] -> ')
-                    # op_attacker_ip = input('attacker_ip [' + str(backdoor.attacker_ip) + '] -> ')
-                    # op_payload_url = input('target_ip [' + str(backdoor.payload_url) + '] -> ')
+                    ops.clear()
+                    if (' ' in op):
+                        delim = op.index(' ')
+                        ops.append(op[:delim].strip())
+                        ops.append(op[delim+1:].strip())
+                    else:
+                        ops.append(op)
+                        
+                    if ops[0] == 'enum_users':
+                        self.msf.enum_users()
+            
 
-                    # if (op_target_ip == ''):
-                    #     backdoor.target_ip = None
-                    # else: backdoor.target_ip = op_target_ip
-                    # if (op_attacker_ip == ''):
-                    #     backdoor.attacker_ip = '127.0.0.1'
-                    # else: backdoor.attacker_ip = op_attacker_ip
-                    # if (op_payload_url == ''):
-                    #     backdoor.payload_url = None
-                    # else: backdoor.payload_url = op_payload_url
+            ##################  MODULES  ##################
+
+            elif (ops[0] == 'modules'):
+                print('Desplegar modulos de MSF\n')
+                name = input('Ponle nombre a la backdoor para guardar los datos >>>   ').strip().lower()
+
+                self.backdoor.name = name
+                self.backdoor.status = 'created'
+
+                while (True):
+                    print('\nOpciones:\n\
+                > select <module_name || module_num>  [[Selecciona un modulo]]\n\
+                > config    [[Configura el modulo seleccionado]]\n\
+                > list  [[Lista los modulos disponibles]]\n\
+                > back  [[Atras]]\n')
+                    op = input('>>>   ').strip().lower()
+                    ops.clear()
+                    if (' ' in op):
+                        delim = op.index(' ')
+                        ops.append(op[:delim].strip())
+                        ops.append(op[delim+1:].strip())
+                    else:
+                        ops.append(op)
+
+                    if (ops[0] == 'select'):
+                        modules_list = self.msf.get_modules()
+
+                        if (len(ops) > 1):
+                            if (len(ops[1]) < 4):
+                                if (int(ops[1]) < len(modules_list)):
+                                    self.backdoor.modules.append({'id': 'post/' + modules_list[int(ops[1])], 'tool': 'msf'})
+                                    print('Seleccionado modulo ' + modules_list[int(ops[1])])
+                                else:
+                                    print('-- HOT: El numero del modulo seleccionado no es correcto')
+                            else:
+                                if (ops[1] in modules_list):
+                                    self.backdoor.modules.append({'id': 'post/' + ops[1], 'tool': 'msf'})
+                                    print('Seleccionado modulo ' + ops[1])
+                                else:
+                                    print('-- HOT: El modulo seleccionado no es correcto')
+                        else:
+                            print('-- HOT: Se debe indicar el modulo seleccionado')
+                        
+                        # TODO: DECIDIR Se puede escribir backdoor en DB en este punto aunque no este rellena
                         
 
+                    elif (ops[0] == 'config'):
+                        print('Configuracion de ' + str(self.backdoor.name) + ':')
 
-                elif (ops[0] == 'list'):
-                    # TODO: DECIDIR De momento solo lista los modulos 'post', no se si parametrizar para listar por tipo o que se pueda elegir el tipo
-                    modules_list = msf.get_modules()
-                    i = 0
-                    for module in modules_list:
-                        i += 1
-                        print(i, ' -> ', module)
-                
-
-                # elif (ops[0] == 'run'):
-
-                
-
-                elif (ops[0] == 'back'):
-                    break
-
-                else: print('-- ERROR: El comando no existe')
-
-        # else: print('Error:')
+                        if (len(self.backdoor.modules) > 0):
+                            module = self.msf.select_module(self.backdoor.modules[0]['id'])
+                            config_missing = self.msf.get_missing_required(module)
+                            for item in config_missing:
+                                if (item == 'SESSION'):
+                                    print(item)
+                        else: print('-- HOT: No hay modulos seleccionados')
 
 
+                        # op_target_ip = input('target_ip [' + str(self.backdoor.target_ip) + '] -> ')
+                        # op_attacker_ip = input('attacker_ip [' + str(self.backdoor.attacker_ip) + '] -> ')
+                        # op_payload_url = input('target_ip [' + str(self.backdoor.payload_url) + '] -> ')
 
-menu()
+                        # if (op_target_ip == ''):
+                        #     self.backdoor.target_ip = None
+                        # else: self.backdoor.target_ip = op_target_ip
+                        # if (op_attacker_ip == ''):
+                        #     self.backdoor.attacker_ip = '127.0.0.1'
+                        # else: self.backdoor.attacker_ip = op_attacker_ip
+                        # if (op_payload_url == ''):
+                        #     self.backdoor.payload_url = None
+                        # else: self.backdoor.payload_url = op_payload_url
+                            
+
+                    elif (ops[0] == 'list'):
+                        modules_list = self.msf.get_modules()
+                        i = 0
+                        for module in modules_list:
+                            i += 1
+                            print(i, ' -> ', module)
+                    # elif (ops[0] == 'run'):
+
+
+                    elif (ops[0] == 'back'):
+                        break
+
+                    else: print('-- HOT: El comando no existe')
+
+
+
+
+
+
+            
+
+    

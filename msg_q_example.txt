@@ -1,0 +1,52 @@
+{
+    "id": "1",
+    "type": "entrie",   // Indica que la info del mensaje es sobre una entrada (de momento no se aplica)
+    "backdoor": "b1_test",   // Nombre de la backdoor en bd
+    "msg": [
+        "1", // ID sesion
+        "status_up | status_down | working | -",  // Estado comprobado (si es '-' no hay cambio de estado)
+        "<timestamp>"   // Momento del fallo
+    ]
+}
+
+{
+    "id": "2",
+    "type": "entrie",
+    "backdoor": "b2",
+    "msg": [
+        "3",
+        "status_up | status_down | working",
+        "<timestamp>"
+    ]
+}
+
+{
+    "id": "2",
+    "type": "module",
+    "backdoor": "b2",
+    "msg": [
+        "3",
+        "status_up | status_down | working",
+        "<timestamp>"
+    ]
+}
+
+{
+    "id": "2",
+    "type": "action",   // 'action' indica que hay que realizar una accions sobre una backdoor
+    "backdoor": "b2",
+    "msg": [
+        "restart || delete",
+        "<timestamp>"
+    ]
+}
+
+{
+    "id": "2",
+    "type": "monitor || menu",  // Aqui este campo sirve para emisor
+    "backdoor": "monitor",  // Este campo sirve para sujeto del mensaje (aqui monitor)
+    "msg": [
+        "start || stop || restart || run",
+        "<timestamp>"
+    ]
+}
