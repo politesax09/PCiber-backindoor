@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import time
 import subprocess
 from db import *
 from backdoor import get_saved_backdoors
@@ -13,19 +14,34 @@ class Monitor:
         self.backdoor_list.append(backdoor)
         self.msf = msf
         self.msg_q = msg_q
-        self.msg_count = msg_count
+        self.msg_last_id = msg_count
+        self.msg_last = None
+        
         # MONITOR indica que se ha iniciado correctamente
-        self.put_msg_q('monitor', 'monitor', ['start'])
-        while True:
-            last_msg = self.wait_msg()
-            if last_msg != None:
-                # MONITOR hace comprobacion backdoors cuando MENU se lo pide
-                if last_msg['type'] == 'menu' and last_msg['backdoor'] == 'monitor' and \
-                        last_msg['msg'][0] == 'run':
-                    self.run_monitor()
-                else: print('-- HOT: Mensaje inesperado de MENU a MONITOR')
+        self.put_msg_q('monitor', 'monitor', 'start')
+        time.sleep(1)
+        if self.wait_msg('menu','menu'):
+            if self.msg_last['msg'] == 'ok':
+                # Esperando a que menu mande mensaje RUN
+                while True:
+                    # Da fallo porq MONITOR recibe su propio mensaje q han enviado de arranque,
+                    # hay q comprobar el id
+                    if self.wait_msg('menu', 'monitor'):
+                        # MONITOR hace comprobacion backdoors cuando MENU se lo pide
+                        if self.msg_last['msg'] == 'run':
+                            # self.run_monitor()
+                            print('MONITOR RUN')
+                            self.put_msg_q('monitor', 'monitor', 'ok')
+                            # Ejemplo mensaje de status de backdoors
+                            # self.put_msg_q('monitor', 'status', {
+
+                            # })
+                            time.sleep(5)
+                        else: print('-- HOT: MONITOR: Mensaje inesperado de MENU')
+                        # else: print('MONITOR: ',self.msg_last_id)
         # self.run_monitor()
 
+    # def wait_for_run(self):
 
 
     # Comprobacion para las persistencias via SSH
@@ -53,28 +69,35 @@ class Monitor:
             if last_msg == None or last_msg['type'] != 'menu':
                 break
 
-    def get_msg_q(self):
-        if not self.msg_q.empty():
-            return self.msg_q.get()
-        else: return None
+    # def get_msg_q(self):
+    #     if not self.msg_q.empty():
+    #         return self.msg_q.get()
+    #     else: return None
         
-    def put_msg_q(self, bdoor_name, type, msg):
-        if bdoor_name and type and msg:
-            msg.append(datetime.datetime.now())
-            self.msg_count += 1
+    def put_msg_q(self, type, subject, msg):
+        if subject and type and msg:
+            # msg.append(datetime.datetime.now())
+            self.msg_last_id += 1
             self.msg_q.put({
-                "id": self.msg_count,
+                "id": self.msg_last_id,
                 "type": type,
-                "backdoor": bdoor_name,
+                "subject": subject,
                 "msg": msg
             })
 
-    def wait_msg(self):
-        msg = None
-        while not msg:
+
+    def wait_msg(self, type, subject):
+        m = None
+        while not m:
             if not self.msg_q.empty():
-                msg = self.msg_q.get()
-        return msg
+                m = self.msg_q.get()
+                if m['id'] > self.msg_last_id and m['type'] == type and m['subject'] == subject:
+                    self.msg_last_id = m['id']
+                    self.msg_last = m
+                    return True
+                else:
+                    print(f'-- HOT: MONITOR: Error en mensaje: {m}')
+                    return False
 
 
     def get_msf_sessions(self):

@@ -1,50 +1,57 @@
 # TODO: Preguntar si al principio si hay algun servidor MSFRPC activo
 
 import datetime
+import time
 from backdoor import Backdoor, get_saved_backdoors
 from msf import Msf
 
 class Menu:
     def __init__(self, msg_q, msg_count, backdoor, msf) -> None:
         self.msg_q = msg_q
-        self.msg_count = msg_count
+        self.msg_last_id = msg_count
+        self.msg_last = None
         self.backdoor = backdoor
         self.backdoor_list = get_saved_backdoors()
         self.msf = msf
+
         # Esperar inicio de Monitor
-        # init_msg = self.wait_msg()
-        # if init_msg['type'] == 'menu' and init_msg['backdoor'] == 'monitor':
-        #     if init_msg['msg'][0] == 'start':
-        #         print('-- COOL: MONITOR inciado correctamente')
-                # self.menu()
-            # else: print('-- HOT: Fallo al iniciar MONITOR. Saliendo de BackInDoor')
-        # else: print('-- HOT: Mensaje no esperado. Saliendo de BackInDoor')
-        self.menu()
+        if self.wait_msg('monitor', 'monitor'):
+            if self.msg_last['msg'] == 'start':
+                print('-- COOL: MONITOR inciado correctamente')
+                self.put_msg_q('menu', 'menu', 'ok')
+                self.menu()
+            else: print('-- HOT: Fallo al iniciar MONITOR. Saliendo de BackInDoor')
 
 
-    def get_msg_q(self):
-        if not self.msg_q.empty():
-            self.msg_q.get()
+    # def get_msg_q(self):
+    #     if not self.msg_q.empty():
+    #         self.msg_q.get()
 
 
-    def put_msg_q(self, bdoor_name, type, msg):
-            if bdoor_name and type and msg:
-                msg.append(datetime.datetime.now())
-                self.msg_count += 1
-                self.msg_q.put({
-                    "id": self.msg_count,
-                    "type": type,
-                    "backdoor": bdoor_name,
-                    "msg": msg
-                })
+    def put_msg_q(self, type, subject, msg):
+        if subject and type and msg:
+            # msg.append(datetime.datetime.now())
+            self.msg_last_id += 1
+            self.msg_q.put({
+                "id": self.msg_last_id,
+                "type": type,
+                "subject": subject,
+                "msg": msg
+            })
 
 
-    def wait_msg(self):
-        msg = None
-        while not msg:
+    def wait_msg(self, type, subject):
+        m = None
+        while not m:
             if not self.msg_q.empty():
-                msg = self.msg_q.get()
-        return msg
+                m = self.msg_q.get()
+                if m['id'] > self.msg_last_id and m['type'] == type and m['subject'] == subject:
+                    self.msg_last_id = m['id']
+                    self.msg_last = m
+                    return True
+                else:
+                    print(f'-- HOT: MENU: Error en mensaje: {m}')
+                    return False
 
 
     def menu(self):
@@ -131,23 +138,27 @@ class Menu:
             ##################  MONITOR  ##################
 
             elif (ops[0] == 'monitor'):
-                self.put_msg_q('monitor', 'menu',['run'])
-                for b in self.backdoor_list:
-                    mon_res = self.wait_msg()
-                    if mon_res != None:
-                        if mon_res['type'] == 'entrie' and mon_res['backdoor'] == b.name:
-                            if mon_res['msg'][0] == 'status_up':
-                                b.status = 'active'
-                            elif mon_res['msg'][0] == 'status_down':
-                                b.status = 'innactive'
-                            self.put_msg_q('monitor', 'menu', ['run'])
+                self.put_msg_q('menu', 'monitor','run')
+                time.sleep(1)
+                if self.wait_msg('monitor', 'monitor'):
+                    if self.msg_last['msg'] == 'ok':
+                        print('MENU: recibido ok')
+                    # for b in self.backdoor_list:
+                    #     mon_res = self.wait_msg()
+                    #     if mon_res != None:
+                    #         if mon_res['type'] == 'entrie' and mon_res['backdoor'] == b.name:
+                    #             if mon_res['msg'][0] == 'status_up':
+                    #                 b.status = 'active'
+                    #             elif mon_res['msg'][0] == 'status_down':
+                    #                 b.status = 'innactive'
+                    #             self.put_msg_q('monitor', 'menu', ['run'])
                         
-                print('Backdoors activas:\n')
-                for bdoor in self.backdoor_list:
-                    bdoor.print_backdoorclass()
-                    print()
-                print('Sesiones activas:\n')
-                print(self.msf.get_sessions())
+                # print('Backdoors activas:\n')
+                # for bdoor in self.backdoor_list:
+                #     bdoor.print_backdoorclass()
+                #     print()
+                # print('Sesiones activas:\n')
+                # print(self.msf.get_sessions())
 
                 while True:
                     print('\nOpciones:\n\

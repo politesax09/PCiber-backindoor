@@ -50,3 +50,17 @@
         "<timestamp>"
     ]
 }
+
+--------------------------------------------------------
+
+MENSAJES V2
+
+{
+    "id": "5",
+    "type": "ation | monitor | menu | module | backdoor | entrie | status",
+    "subject": "",
+    "msg": [
+        ...
+    ]
+}
+
