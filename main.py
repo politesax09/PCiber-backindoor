@@ -17,12 +17,13 @@ except:
 
 backdoor = Backdoor(None)
 # Crear cola de mensajes
-msg_q = queue.Queue()
+msg_q_menu = queue.Queue()
+msg_q_mon = queue.Queue()
 msg_count = 0
 
 # Crear los hilos
-t1 = threading.Thread(target=Menu, args=(msg_q, msg_count, backdoor, msf,))
-t2 = threading.Thread(target=Monitor, args=(msg_q, msg_count, backdoor, msf,))
+t1 = threading.Thread(target=Menu, args=(msg_q_menu, msg_q_mon, msg_count, backdoor, msf,))
+t2 = threading.Thread(target=Monitor, args=(msg_q_menu, msg_q_mon, msg_count, backdoor, msf,))
 
 # Iniciar los hilos
 t1.start()

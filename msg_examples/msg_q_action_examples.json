@@ -1,0 +1,9 @@
+{
+    "id": "2",
+    "type": "action",   // 'action' indica que hay que realizar una accions sobre una backdoor
+    "backdoor": "b2",
+    "msg": [
+        "restart | delete | edit | select",
+        "<timestamp>"
+    ]
+}

@@ -1,17 +1,28 @@
-# TODO: Preguntar si al principio si hay algun servidor MSFRPC activo
 
 import datetime
 import time
 from backdoor import Backdoor, get_saved_backdoors
 from msf import Msf
 
+# DONE: 1. Implementar dos colas de mensajes y reestructurar libreria de mensajes para ello:
+# menu ---> monitor, monitor ---> menu
+# TODO: 2. Implementar acciones de MENU por paso de mensajes y que las ejecute MONITOR:
+#   > Parseador de json (como vienen backdoors en los mensajes) a clase backdoor
+# TODO: 3. Revisar implementacion tecnica SSH
+# TODO: 4. Implementar tecnica 2
+# TODO: 5. Implementar tecnica 3
+# TODO: 6. Implementar tecnica 4
+# TODO: 7. Implementar acciones de monitorizacion: list, select, restart, delete, edit
+
 class Menu:
-    def __init__(self, msg_q, msg_count, backdoor, msf) -> None:
-        self.msg_q = msg_q
+    def __init__(self, msg_q_menu, msg_q_mon, msg_count, backdoor, msf) -> None:
+        self.msg_q_menu = msg_q_menu
+        self.msg_q_mon = msg_q_mon
         self.msg_last_id = msg_count
         self.msg_last = None
         self.backdoor = backdoor
-        self.backdoor_list = get_saved_backdoors()
+        # self.backdoor_list = get_saved_backdoors()
+        self.backdoor_list = None
         self.msf = msf
 
         # Esperar inicio de Monitor
@@ -32,7 +43,7 @@ class Menu:
         if subject and type and msg:
             # msg.append(datetime.datetime.now())
             self.msg_last_id += 1
-            self.msg_q.put({
+            self.msg_q_mon.put({
                 "id": self.msg_last_id,
                 "type": type,
                 "subject": subject,
@@ -43,8 +54,8 @@ class Menu:
     def wait_msg(self, type, subject):
         m = None
         while not m:
-            if not self.msg_q.empty():
-                m = self.msg_q.get()
+            if not self.msg_q_menu.empty():
+                m = self.msg_q_menu.get()
                 if m['id'] > self.msg_last_id and m['type'] == type and m['subject'] == subject:
                     self.msg_last_id = m['id']
                     self.msg_last = m
@@ -139,10 +150,13 @@ class Menu:
 
             elif (ops[0] == 'monitor'):
                 self.put_msg_q('menu', 'monitor','run')
-                time.sleep(1)
+                # time.sleep(1)
                 if self.wait_msg('monitor', 'monitor'):
                     if self.msg_last['msg'] == 'ok':
                         print('MENU: recibido ok')
+                        if self.wait_msg('status', 'backdoor'):
+                            print('MENU... ', self.msg_last['msg'])
+                            self.put_msg_q('status', 'backdoor', 'ok')
                     # for b in self.backdoor_list:
                     #     mon_res = self.wait_msg()
                     #     if mon_res != None:
@@ -165,7 +179,8 @@ class Menu:
                 > list   [[Lista las backdoors guardadas]]\n\
                 > select <nombre backdoor>    [[Selecciona una backdoor]]\n\
                 > restart <nombre backdoor>     [[Ejecutar de nuevo]]\n\
-                > delete <nombre backdoor>      [[Eliminar backdoor]]\n\
+                > edit <nombre backdoor>        [[Editar una backdoor]]\n\
+                > delete <nombre backdoor>      [[Eliminar una backdoor]]\n\
                 > back  [[Atras]]\n')
 
                     op = input('[monitor]>>>   ').strip().lower()
@@ -194,12 +209,14 @@ class Menu:
                                     self.backdoor = bdoor
                                     break
                             if self.backdoor.name != None:
-                                print('COOL: Seleccionada ' + self.backdoor.name)
-                                self.backdoor.print_backdoorclass()
-                                print()
-                            else:
-                                print('-- HOT: La backdoor seleccionada no existe\n')
-
+                                self.put_msg_q('action', 'backdoor', ['select', self.backdoor.name])
+                                if self.wait_msg('action', 'monitor'):
+                                    if self.msg_last['msg'][0] == 'ok':
+                                        print('COOL: Seleccionada ' + self.backdoor.name)
+                                        self.backdoor.print_backdoorclass()
+                                        print()
+                                    else: print('HOT: Error al seleccionar ' + self.backdoor.name)
+                            else: print('-- HOT: La backdoor seleccionada no existe\n')
                         else: print('-- HOT: Debes seleccionar una backdoor disponible\n')
 
                     if ops[0] == 'restart':

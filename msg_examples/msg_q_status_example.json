@@ -1,0 +1,24 @@
+{
+    "id": "5",
+    "type": "status",
+    "subject": "backdoor",
+    "msg": [
+        {
+            "b1": {
+                "status": "innactive",
+                "entries": [
+                    {"status":"down"}
+                ]
+            }
+        }
+        ,
+        {
+            "b2": {
+                "entries":[
+                    {},
+                    {"status":"up"}
+                ]
+            }
+        }
+    ]
+}
