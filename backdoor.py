@@ -103,10 +103,20 @@ class Backdoor:
 
     def print_backdoorclass_simple(self):
         print('Nombre: ' + self.name)
-        print('Tipo:' + self.type)
-        print('Objetivo:' + self.target_ip)
-        print('Estado:' + self.status)
+        if self.type != None:
+            print('Tipo: ' + self.type)
+        else: print('Tipo: -')
+        if self.target_ip != None:
+            print('Objetivo: ' + self.target_ip)
+        else: print('Objetivo: -')
+        if self.status != None:
+            print('Estado: ' + self.status)
+        else: print('Estado: -')
 
+    def to_msg(self):
+        return [
+            
+        ]
 
 
 def get_saved_backdoors():

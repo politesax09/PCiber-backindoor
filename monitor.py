@@ -13,6 +13,7 @@ class Monitor:
         self.backdoor_list = get_saved_backdoors()
         self.backdoor_list.append(backdoor)
         self.backdoor_selected = None
+        self.session_list = None
         self.msf = msf
         self.msg_q_menu = msg_q_menu
         self.msg_q_mon = msg_q_mon
@@ -64,16 +65,23 @@ class Monitor:
                             if self.wait_msg('action', 'backdoor'):
                                 if self.msg_last['msg'][0] == 'list':
                                     self.refresh_backdoor_list()
+                                    print(self.backdoor_list)
                                     # REFRESCAR SESIONES
+                                    self.refresh_session_list()
+                                    print(self.session_list)
                                     # ENVIAR INFO A MENU
+                                    
                                 if self.msg_last['msg'][0] == 'select':
                                     if self.select_backdoor(self.msg_last['msg'][1]):
                                         self.put_msg_q('action', 'monitor', ['ok'])
                                     else: self.put_msg_q('action', 'monitor', ['error'])
+
                                 if self.msg_last['msg'][0] == 'restart':
                                     pass
+
                                 if self.msg_last['msg'][0] == 'edit':
                                     pass
+
                                 if self.msg_last['msg'][0] == 'delete':
                                     pass
 
@@ -139,8 +147,8 @@ class Monitor:
                     return False
 
 
-    def refresh_backdoor_list(self):
-        self.backdoor_list = get_saved_backdoors()
+    def refresh_session_list(self):
+        self.session_list = self.get_msf_sessions()
 
     def get_msf_sessions(self):
         return self.msf.get_sessions()
@@ -158,6 +166,11 @@ class Monitor:
 
     def relaunch_session(self):
         pass
+
+
+
+    def refresh_backdoor_list(self):
+        self.backdoor_list = get_saved_backdoors()
 
     def select_backdoor(self, name):
         for bdoor in self.backdoor_list:
