@@ -22,3 +22,21 @@
         }
     ]
 }
+
+{
+    "id": "6",
+    "type": "status",
+    "subject": "session",
+    "msg": [
+        {
+            "s1": {
+                "status": "inactive",
+            }
+        },
+        {
+            "s2": {
+                "status": "active"
+            }
+        }
+    ]
+}

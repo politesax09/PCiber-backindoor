@@ -3,7 +3,7 @@ import datetime
 import time
 import subprocess
 from db import *
-from backdoor import get_saved_backdoors
+from backdoor import *
 
 # TODO: AL ARRANCAR LA HERRAMIENTA COMPROBAR SI HAY SESIONES ACTIVAS
 #       Y GUARDADAS EN LAS CORRESPONDIENTES BACKDOORS
@@ -11,7 +11,8 @@ class Monitor:
 
     def __init__(self, msg_q_menu, msg_q_mon, msg_count, backdoor, msf) -> None:
         self.backdoor_list = get_saved_backdoors()
-        self.backdoor_list.append(backdoor)
+        # self.backdoor_list.append(backdoor)
+        self.new_backdoor_list = get_saved_backdoors()
         self.backdoor_selected = None
         self.session_list = None
         self.msf = msf
@@ -64,12 +65,13 @@ class Monitor:
                             # RECIBIR OPCION DE MENU
                             if self.wait_msg('action', 'backdoor'):
                                 if self.msg_last['msg'][0] == 'list':
+                                    # Actualizar backdoors
                                     self.refresh_backdoor_list()
                                     print(self.backdoor_list)
-                                    # REFRESCAR SESIONES
-                                    self.refresh_session_list()
-                                    print(self.session_list)
-                                    # ENVIAR INFO A MENU
+                                    self.put_msg_q('status', 'backdoor', self.backdoor_to_msg())
+                                    # Actualizar sesiones activas
+                                    # self.refresh_session_list()
+                                    # print(self.session_list)
                                     
                                 if self.msg_last['msg'][0] == 'select':
                                     if self.select_backdoor(self.msg_last['msg'][1]):
@@ -145,6 +147,65 @@ class Monitor:
                 else:
                     print(f'-- HOT: MONITOR: Error en mensaje: {m}')
                     return False
+
+    def backdoor_to_msg(self):
+        msg = []
+        for bdoor in self.backdoor_list:
+            for new_bdoor in self.new_backdoor_list:
+                # msg.append({'name':new_bdoor.name})
+                msg.append({new_bdoor.name:{}})
+                if new_bdoor.type != bdoor.type:
+                    msg[new_bdoor.name]['type'] = new_bdoor.type
+                if new_bdoor.target_ip != bdoor.target_ip:
+                    msg[new_bdoor.name]['target_ip'] = new_bdoor.target_ip
+                if new_bdoor.target_url != bdoor.target_url:
+                    msg[new_bdoor.name]['target_url'] = new_bdoor.target_url
+                if new_bdoor.attacker_ip != bdoor.attacker_ip:
+                    msg[new_bdoor.name]['attacker_ip'] = new_bdoor.attacker_ip
+                if new_bdoor.attacker_url != bdoor.attacker_url:
+                    msg[new_bdoor.name]['attacker_url'] = new_bdoor.attacker_url
+                if new_bdoor.shell != bdoor.shell:
+                    msg[new_bdoor.name]['shell'] = new_bdoor.shell
+                if new_bdoor.status != bdoor.status:
+                    msg[new_bdoor.name]['status'] = new_bdoor.status
+                if new_bdoor.error != bdoor.error:
+                    msg[new_bdoor.name]['error'] = new_bdoor.error
+                msg[new_bdoor.name]['entries'] = []
+                for e1 in bdoor.entries:
+                    for e2 in new_bdoor.entries:
+                        if e1 != e2:
+                            msg[new_bdoor.name]['entries'] = e2
+        return msg
+            
+    def msg_to_backdoor(self):
+        b_list = []
+
+        for bname in list(self.msg_last['msg'].keys()):
+            b_list.append(Backdoor(bdoor['name']))
+        for b1 in self.msg_last['msg']:
+            for b2 in b_list:
+                if b1.type != bdoor.type:
+                    msg[new_bdoor.name]['type'] = b2.type
+                if b1.target_ip != bdoor.target_ip:
+                    msg[b2.name]['target_ip'] = b2.target_ip
+                if b1.target_url != bdoor.target_url:
+                    msg[b2.name]['target_url'] = b2.target_url
+                if b1.attacker_ip != bdoor.attacker_ip:
+                    msg[b2.name]['attacker_ip'] = b2.attacker_ip
+                if b1.attacker_url != bdoor.attacker_url:
+                    msg[b2.name]['attacker_url'] = b2.attacker_url
+                if b1.shell != bdoor.shell:
+                    msg[b2.name]['shell'] = b2.shell
+                if b1.status != bdoor.status:
+                    msg[b2.name]['status'] = b2.status
+                if b1.error != bdoor.error:
+                    msg[b2.name]['error'] = b2.error
+                msg[b2.name]['entries'] = []
+                for e1 in bdoor.entries:
+                    for e2 in b2.entries:
+                        if e1 != e2:
+                            msg[b2.name]['entries'] = e2
+
 
 
     def refresh_session_list(self):

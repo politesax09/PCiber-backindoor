@@ -193,13 +193,20 @@ class Menu:
                         ops.append(op)
 
                     if ops[0] == 'list':
-                        print('Backdoors activas:\n')
-                        self.backdoor_list = get_saved_backdoors()
-                        for bdoor in self.backdoor_list:
-                            bdoor.print_backdoorclass_simple()
-                            print('------------------')
-                        print('Sesiones activas:\n')
-                        print(self.msf.get_sessions())
+                        # Pedir status a MONITOR
+                        self.put_msg_q('action', 'backdoor', ['list'])
+                        self.wait_msg('status','backdoor')
+                        self.put_msg_q('status', 'backdoor', 'ok')
+                        # Actualizar listas de backdoors y sesiones
+                        
+
+                        # print('Backdoors activas:\n')
+                        # self.backdoor_list = get_saved_backdoors()
+                        # for bdoor in self.backdoor_list:
+                        #     bdoor.print_backdoorclass_simple()
+                        #     print('------------------')
+                        # print('Sesiones activas:\n')
+                        # print(self.msf.get_sessions())
                     
                     if (ops[0] == 'select'):
                         if (len(ops) > 1):
