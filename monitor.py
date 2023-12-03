@@ -28,47 +28,25 @@ class Monitor:
             if self.msg_last['msg'] == 'ok':
                 # Esperando a que menu mande mensaje RUN
                 while True:
-                    # Da fallo porq MONITOR recibe su propio mensaje q han enviado de arranque,
-                    # hay q comprobar el id SOLUCIONADO
                     if self.wait_msg('menu', 'monitor'):
                         # MONITOR hace comprobacion backdoors cuando MENU se lo pide
                         if self.msg_last['msg'] == 'run':
                             # self.run_monitor()
-                            print('MONITOR RUN')
                             self.put_msg_q('monitor', 'monitor', 'ok')
                             
                             # Ejemplo mensaje de status de backdoors
-                            self.put_msg_q('status', 'backdoor', [
-                            {
-                                "b1": {
-                                    "status": "innactive",
-                                    "entries": [
-                                        {"status":"down"}
-                                    ]
-                                }
-                            }
-                            ,
-                            {
-                                "b2": {
-                                    "entries":[
-                                        {},
-                                        {"status":"up"}
-                                    ]
-                                }
-                            }])
-                            # time.sleep(1)
+                            self.put_msg_q('status', 'backdoor', self.backdoor_to_msg())
                             self.wait_msg('status', 'backdoor')
-                            if self.msg_last['msg'] == 'ok':
-                                print('MONITOR STATUS OK')
-                            else: print('-- HOT: MONITOR: Mensaje inesperado de MENU')
+                            if self.msg_last['msg'] != 'ok': print('-- HOT: MONITOR: Mensaje inesperado de MENU')
 
                             # RECIBIR OPCION DE MENU
                             if self.wait_msg('action', 'backdoor'):
                                 if self.msg_last['msg'][0] == 'list':
                                     # Actualizar backdoors
                                     self.refresh_backdoor_list()
-                                    print(self.backdoor_list)
+                                    # print('MON... ',self.backdoor_list)
                                     self.put_msg_q('status', 'backdoor', self.backdoor_to_msg())
+                                    self.wait_msg('status', 'backdoor')
                                     # Actualizar sesiones activas
                                     # self.refresh_session_list()
                                     # print(self.session_list)
@@ -150,61 +128,50 @@ class Monitor:
 
     def backdoor_to_msg(self):
         msg = []
+        # print('MON backdoor list... ',self.backdoor_list[0].print_backdoorclass_simple())
+        # print(f'MON new backdoor list... {self.new_backdoor_list[0].print_backdoorclass_simple()}')
+
         for bdoor in self.backdoor_list:
-            for new_bdoor in self.new_backdoor_list:
-                # msg.append({'name':new_bdoor.name})
-                msg.append({new_bdoor.name:{}})
-                if new_bdoor.type != bdoor.type:
-                    msg[new_bdoor.name]['type'] = new_bdoor.type
-                if new_bdoor.target_ip != bdoor.target_ip:
-                    msg[new_bdoor.name]['target_ip'] = new_bdoor.target_ip
-                if new_bdoor.target_url != bdoor.target_url:
-                    msg[new_bdoor.name]['target_url'] = new_bdoor.target_url
-                if new_bdoor.attacker_ip != bdoor.attacker_ip:
-                    msg[new_bdoor.name]['attacker_ip'] = new_bdoor.attacker_ip
-                if new_bdoor.attacker_url != bdoor.attacker_url:
-                    msg[new_bdoor.name]['attacker_url'] = new_bdoor.attacker_url
-                if new_bdoor.shell != bdoor.shell:
-                    msg[new_bdoor.name]['shell'] = new_bdoor.shell
-                if new_bdoor.status != bdoor.status:
-                    msg[new_bdoor.name]['status'] = new_bdoor.status
-                if new_bdoor.error != bdoor.error:
-                    msg[new_bdoor.name]['error'] = new_bdoor.error
-                msg[new_bdoor.name]['entries'] = []
-                for e1 in bdoor.entries:
-                    for e2 in new_bdoor.entries:
-                        if e1 != e2:
-                            msg[new_bdoor.name]['entries'] = e2
+            msg.append({'name':bdoor.name})
+            msg[-1]['type'] = bdoor.type
+            msg[-1]['target_ip'] = bdoor.target_ip
+            msg[-1]['target_url'] = bdoor.target_url
+            msg[-1]['attacker_ip'] = bdoor.attacker_ip
+            msg[-1]['attacker_url'] = bdoor.attacker_url
+            msg[-1]['shell'] = bdoor.shell
+            msg[-1]['status'] = bdoor.status
+            msg[-1]['error'] = bdoor.error
+            msg[-1]['entries'] = bdoor.entries
+
         return msg
             
     def msg_to_backdoor(self):
         b_list = []
 
-        for bname in list(self.msg_last['msg'].keys()):
-            b_list.append(Backdoor(bdoor['name']))
-        for b1 in self.msg_last['msg']:
-            for b2 in b_list:
-                if b1.type != bdoor.type:
-                    msg[new_bdoor.name]['type'] = b2.type
-                if b1.target_ip != bdoor.target_ip:
-                    msg[b2.name]['target_ip'] = b2.target_ip
-                if b1.target_url != bdoor.target_url:
-                    msg[b2.name]['target_url'] = b2.target_url
-                if b1.attacker_ip != bdoor.attacker_ip:
-                    msg[b2.name]['attacker_ip'] = b2.attacker_ip
-                if b1.attacker_url != bdoor.attacker_url:
-                    msg[b2.name]['attacker_url'] = b2.attacker_url
-                if b1.shell != bdoor.shell:
-                    msg[b2.name]['shell'] = b2.shell
-                if b1.status != bdoor.status:
-                    msg[b2.name]['status'] = b2.status
-                if b1.error != bdoor.error:
-                    msg[b2.name]['error'] = b2.error
-                msg[b2.name]['entries'] = []
-                for e1 in bdoor.entries:
-                    for e2 in b2.entries:
-                        if e1 != e2:
-                            msg[b2.name]['entries'] = e2
+        for b in self.msg_last['msg']:
+            b_list.append(Backdoor(b['name']))
+
+        for b1, b2 in zip(b_list, self.msg_last['msg']):
+            if b1.type != b2['type']:
+                b1.type = b2['type']
+            if b1.target_ip != b2['target_ip']:
+                b1.target_ip = b2['target_ip']
+            if b1.target_url != b2['target_url']:
+                b1.target_url = b2['target_url']
+            if b1.attacker_ip != b2['attacker_ip']:
+                b1.attacker_ip = b2['attacker_ip']
+            if b1.attacker_url != b2['attacker_url']:
+                b1.attacker_url = b2['attacker_url']
+            if b1.shell != b2['shell']:
+                b1.shell = b2['shell']
+            if b1.status != b2['status']:
+                b1.status = b2['status']
+            if b1.error != b1.error:
+                b1.error = b2['error']
+            for e1, e2 in zip(b1.entries, b2['entries']):
+                if e1 != e2:
+                    e1 = e2
+        return b_list
 
 
 
@@ -229,6 +196,8 @@ class Monitor:
         pass
 
 
+    def refresh_new_backdoor_list(self):
+        self.new_backdoor_list = get_saved_backdoors()
 
     def refresh_backdoor_list(self):
         self.backdoor_list = get_saved_backdoors()

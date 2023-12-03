@@ -113,10 +113,6 @@ class Backdoor:
             print('Estado: ' + self.status)
         else: print('Estado: -')
 
-    def to_msg(self):
-        return [
-            
-        ]
 
 
 def get_saved_backdoors():

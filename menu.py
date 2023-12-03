@@ -19,7 +19,7 @@ class Menu:
         self.msg_q_menu = msg_q_menu
         self.msg_q_mon = msg_q_mon
         self.msg_last_id = msg_count
-        self.msg_last = None
+        self.msg_last = []
         self.backdoor = backdoor
         # self.backdoor_list = get_saved_backdoors()
         self.backdoor_list = None
@@ -63,6 +63,43 @@ class Menu:
                 else:
                     print(f'-- HOT: MENU: Error en mensaje: {m}')
                     return False
+
+
+    def msg_to_backdoor(self):
+        b_list = []
+        # b_name_list = [b.name for b in self.backdoor_list]
+        # Comprobar si hay backdoors que no estan en la lista
+        for b_msg in self.msg_last['msg']:
+            b_list.append(Backdoor(b_msg['name']))
+            # if not b_list:
+            #     b_list = [Backdoor(b_msg['name'])]
+            # elif b_msg['name'] not in [b.name for b in self.backdoor_list]:
+                # self.backdoor_list.append(Backdoor(b_msg['name']))
+                
+        # for b in self.backdoor_list:
+        #     if b.name not in [b_msg['name'] for b_msg in self.msg_last['msg']]:
+        #         b_list.append(Backdoor(b['name']))
+
+        for b1, b2 in zip(b_list, self.msg_last['msg']):
+            if 'type' in b2:
+                b1.type = b2['type']
+            if 'target_ip' in b2:
+                b1.target_ip = b2['target_ip']
+            if 'target_url' in b2:
+                b1.target_url = b2['target_url']
+            if 'attacker_ip' in b2:
+                b1.attacker_ip = b2['attacker_ip']
+            if 'attacker_url' in b2:
+                b1.attacker_url = b2['attacker_url']
+            if 'shell' in b2:
+                b1.shell = b2['shell']
+            if 'status' in b2:
+                b1.status = b2['status']
+            if 'error' in b2:
+                b1.error = b2['error']
+            b1.entries = b2['entries']
+        
+        return b_list
 
 
     def menu(self):
@@ -153,10 +190,9 @@ class Menu:
                 # time.sleep(1)
                 if self.wait_msg('monitor', 'monitor'):
                     if self.msg_last['msg'] == 'ok':
-                        print('MENU: recibido ok')
                         if self.wait_msg('status', 'backdoor'):
-                            print('MENU... ', self.msg_last['msg'])
                             self.put_msg_q('status', 'backdoor', 'ok')
+                            print('MENU... ', self.msg_last['msg'])
                     # for b in self.backdoor_list:
                     #     mon_res = self.wait_msg()
                     #     if mon_res != None:
@@ -198,19 +234,15 @@ class Menu:
                         self.wait_msg('status','backdoor')
                         self.put_msg_q('status', 'backdoor', 'ok')
                         # Actualizar listas de backdoors y sesiones
-                        
-
-                        # print('Backdoors activas:\n')
-                        # self.backdoor_list = get_saved_backdoors()
-                        # for bdoor in self.backdoor_list:
-                        #     bdoor.print_backdoorclass_simple()
-                        #     print('------------------')
-                        # print('Sesiones activas:\n')
-                        # print(self.msf.get_sessions())
+                        self.backdoor_list = self.msg_to_backdoor()
+                        print('Backdoors activas:\n')
+                        for bdoor in self.backdoor_list:
+                            bdoor.print_backdoorclass_simple()
+                            print('------------------')
                     
                     if (ops[0] == 'select'):
                         if (len(ops) > 1):
-                            self.backdoor_list = get_saved_backdoors()
+                            # self.backdoor_list = get_saved_backdoors()
                             for bdoor in self.backdoor_list:
                                 if (ops[1] == bdoor.name):
                                     self.backdoor = bdoor

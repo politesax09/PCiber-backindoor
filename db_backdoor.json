@@ -8,7 +8,17 @@
             "attacker_ip": "127.0.0.1",
             "attacker_url": null,
             "payload_url": null,
-            "entries": [],
+            "entries": [
+                {
+                    "session": "msf-1",
+                    "service": "s1",
+                    "username": "u1",
+                    "password": "p1",
+                    "key": "k1",
+                    "file": "f1",
+                    "status": "up"
+                }
+            ],
             "modules": [],
             "shell": "ncshell",
             "status": "innactive",
@@ -44,6 +54,20 @@
         },
         {
             "name": "bereer",
+            "type": "msf_ssh_key",
+            "target_ip": null,
+            "target_url": null,
+            "attacker_ip": "127.0.0.1",
+            "attacker_url": null,
+            "payload_url": null,
+            "entries": [],
+            "modules": [],
+            "shell": "ncshell",
+            "status": "innactive",
+            "error": null
+        },
+        {
+            "name": "metas1",
             "type": "msf_ssh_key",
             "target_ip": null,
             "target_url": null,
